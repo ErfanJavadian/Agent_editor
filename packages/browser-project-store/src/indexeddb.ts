@@ -97,9 +97,9 @@ export class IndexedDbProjectStore {
   async loadProject(projectId: string): Promise<ProjectDocument | null> {
     const database = await this.openDatabase();
     const transaction = database.transaction("projects", "readonly");
+    const completion = transactionCompleted(transaction);
     const request = transaction.objectStore("projects").get(projectId) as IDBRequest<StoredProject | undefined>;
-    const record = await requestResult(request);
-    await transactionCompleted(transaction);
+    const [record] = await Promise.all([requestResult(request), completion]);
     return record ? parseProjectDocument(record.manifest) : null;
   }
 
@@ -122,9 +122,9 @@ export class IndexedDbProjectStore {
   async loadMedia(mediaId: string): Promise<Blob | null> {
     const database = await this.openDatabase();
     const transaction = database.transaction("media", "readonly");
+    const completion = transactionCompleted(transaction);
     const request = transaction.objectStore("media").get(mediaId) as IDBRequest<StoredMedia | undefined>;
-    const record = await requestResult(request);
-    await transactionCompleted(transaction);
+    const [record] = await Promise.all([requestResult(request), completion]);
     return record?.blob ?? null;
   }
 
