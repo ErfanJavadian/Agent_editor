@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run ../packages/project-core/tests"
+    "test": "vitest run --root .."
   },
   "dependencies": {
     "react": "^19.0.0",
