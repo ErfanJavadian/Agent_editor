@@ -32,6 +32,10 @@
 - `docs/`: تعریف محصول، معماری و نقشه راه.
 - `desktop/` و `android/`: کلاینت‌های اختصاصی در مراحل بعدی اضافه می‌شوند.
 
+## شروع توسعه
+
+راهنمای دریافت شاخه، نصب و اجرای رابط فعلی: [DEVELOPMENT_SETUP.md](docs/DEVELOPMENT_SETUP.md)
+
 ## اسناد اصلی
 
 - [تعریف محصول](docs/PRODUCT_DIRECTION.md)
