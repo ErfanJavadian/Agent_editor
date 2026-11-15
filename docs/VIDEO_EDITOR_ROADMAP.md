@@ -42,6 +42,13 @@
 - [ ] Add audio preview synchronization and waveform display.
 - [ ] Add a desktop timeline UI and export workflow.
 
+## Phase 3.5 — Media engine foundation
+- [x] Define platform-neutral media engine, probe, capability, and render-job contracts.
+- [x] Validate render ranges, output filename safety, profile dimensions, codecs, and engine limits.
+- [x] Add unit tests for valid and invalid render requests.
+- [ ] Implement a real media adapter after platform benchmark and codec/license review.
+- [ ] Add cancellation, progress, bounded queue execution, and integration tests.
+
 ## Phase 4 — Agent editing system
 - [ ] Define typed editing tool contracts.
 - [ ] Add project inspection and media analysis tools.
@@ -67,7 +74,7 @@
 
 ## Phase 7 — Hardening and release readiness
 - [x] Add CI for project-core and IndexedDB tests, frontend typecheck/build, backend tests, and backend lint.
-- [x] Upgrade Vitest to a patched release; npm audit reported zero vulnerabilities.
+- [x] Upgrade Vitest to a patched release; npm audit reported zero vulnerabilities in prior CI.
 - [ ] Add cross-platform integration tests.
 - [ ] Add performance, memory, crash-recovery, and cancellation tests.
 - [ ] Security review for imported projects and agent tools.
@@ -76,13 +83,12 @@
 
 ## Verified evidence
 
-- Project core: **17 tests passed**; IndexedDB adapter: **3 tests passed**; total **20/20** in GitHub Actions at commit `84722f2`.
-- Frontend: TypeScript check and Vite production build passed at the same commit.
-- Backend: pytest and Ruff checks passed at the same commit.
-- Frontend dependency audit: zero vulnerabilities after the Vitest security upgrade.
-- Frontend dependency audit: **0 vulnerabilities** at commit `27b555b`.
-- Backend: existing pytest suite and Ruff lint passed in the same workflow.
-- Manual testing on Android and desktop has **not** yet been performed.
+- Earlier baseline: project core 17 tests and IndexedDB adapter 3 tests passed (20 total) at commit `84722f2`.
+- Earlier baseline: frontend TypeScript check and Vite production build passed.
+- Earlier baseline: backend pytest and Ruff checks passed.
+- New media-engine contract tests are added; their GitHub Actions run must pass before they are marked verified.
+- Manual testing on Android and desktop has not yet been completed.
+- No real media decoder/encoder or MP4 export is connected.
 - Project manifests and imported media blobs persist in browser IndexedDB; media package export, relinking, and native asset management are not implemented.
 
 ## Progress vocabulary
