@@ -53,13 +53,18 @@ python3 -m venv .venv
 # shellcheck disable=SC1091
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
+python -m pip install -e .
+python -m pip install httpx pytest
 
 step "Backend automated tests"
 pytest
 
 step "Backend lint"
-ruff check .
+if python -m pip install ruff; then
+  ruff check .
+else
+  printf '[WARN] Ruff could not be installed on this platform; GitHub Actions runs Ruff on Linux.\\n'
+fi
 
 step "Optional Python dependency audit"
 if command -v pip-audit >/dev/null 2>&1; then
