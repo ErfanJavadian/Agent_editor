@@ -37,7 +37,7 @@
 - [x] Add basic UI undo/redo history.
 - [x] Add clip removal without deleting source media.
 - [ ] Add direct drag-and-drop clip editing and keyboard shortcuts.
-- [ ] Add persistent save/reopen and project recovery.
+- [x] Add browser-local persistent save/reopen and automatic project recovery.
 - [ ] Add audio preview synchronization and waveform display.
 - [ ] Add a desktop timeline UI and export workflow.
 
@@ -75,7 +75,7 @@
 
 ## Verified evidence
 
-- Project core + IndexedDB adapter: **18/18 tests passed** in GitHub Actions at commit `27b555b`.
+- Project core: **15 tests passed**; IndexedDB adapter: **3 tests passed**; total **18/18** in GitHub Actions at commit `27b555b`.
 - Frontend: TypeScript check and Vite production build passed at the same commit.
 - Frontend dependency audit: **0 vulnerabilities** at commit `27b555b`.
 - Backend: existing pytest suite and Ruff lint passed in the same workflow.
