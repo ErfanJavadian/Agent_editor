@@ -90,6 +90,9 @@ export function validateProject(project: ProjectDocument): string[] {
     addId(media.id, "Media");
     if (!media.name.trim()) errors.push("Media name cannot be empty: " + media.id);
     if (!media.sourceUri.trim()) errors.push("Media source URI cannot be empty: " + media.id);
+    if (!["video", "audio", "image"].includes(media.kind)) {
+      errors.push("Unsupported media kind: " + media.id);
+    }
     mediaById.set(media.id, media);
     if (media.durationFrames !== undefined) {
       positiveInteger(media.durationFrames, "Media duration");
@@ -109,6 +112,9 @@ export function validateProject(project: ProjectDocument): string[] {
     for (const track of sequence.tracks) {
       addId(track.id, "Track");
       if (!track.name.trim()) errors.push("Track name cannot be empty: " + track.id);
+      if (track.kind !== "video" && track.kind !== "audio") {
+        errors.push("Unsupported track kind: " + track.id);
+      }
       const ordered = [...track.clips].sort(
         (a, b) => a.timelineStartFrame - b.timelineStartFrame,
       );
