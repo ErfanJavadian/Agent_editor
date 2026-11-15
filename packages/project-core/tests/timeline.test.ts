@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createEmptyProject, validateProject } from "../src/project";
 import { parseProjectDocument, serializeProjectDocument } from "../src/project-io";
-import { insertClip, moveClip, splitClip, trimClip } from "../src/timeline";
+import { insertClip, moveClip, removeClip, splitClip, trimClip } from "../src/timeline";
 import type { ProjectDocument } from "../src/types";
 
 function fixture(): ProjectDocument {
@@ -76,6 +76,14 @@ describe("project core", () => {
     expect(() => insertClip(project, "sequence-main", "track-video-1", {
       ...clip, id: "clip-2", timelineStartFrame: 100,
     })).toThrow(/overlap/i);
+  });
+
+  it("removes a clip without deleting its source media or mutating the original", () => {
+    const project = insertClip(fixture(), "sequence-main", "track-video-1", clip);
+    const result = removeClip(project, "sequence-main", "track-video-1", "clip-1");
+    expect(result.sequences[0]?.tracks[0]?.clips).toHaveLength(0);
+    expect(result.media).toHaveLength(1);
+    expect(project.sequences[0]?.tracks[0]?.clips).toHaveLength(1);
   });
 
   it("moves a clip to a valid timeline position", () => {
