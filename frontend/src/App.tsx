@@ -428,7 +428,6 @@ export default function App() {
                             }}
                             onClick={() => {
                               setSelectedClipId(clip.id);
-                              setSelectedTrackId(track.id);
                               seek(clip.timelineStartFrame);
                             }}
                             title={media?.name ?? "Media"}
