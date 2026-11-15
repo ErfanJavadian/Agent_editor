@@ -11,9 +11,11 @@ import {
   type TimelineClip,
   type TimelineTrack,
 } from "../../packages/project-core/src";
+import { IndexedDbProjectStore } from "../../packages/browser-project-store/src/indexeddb";
 
 const PIXELS_PER_FRAME = 1.6;
 const FRAMES_PER_SECOND = 30;
+const LOCAL_PROJECT_ID = "agent-editor-local-project";
 
 type MediaUrlMap = Record<string, string>;
 
@@ -60,8 +62,9 @@ function readMediaMetadata(file: File, url: string): Promise<{
 
 export default function App() {
   const [project, setProject] = useState<ProjectDocument>(() =>
-    createEmptyProject({ id: crypto.randomUUID(), name: "پروژه بدون عنوان" }),
+    createEmptyProject({ id: LOCAL_PROJECT_ID, name: "پروژه بدون عنوان" }),
   );
+  const [isLoading, setIsLoading] = useState(true);
   const [mediaUrls, setMediaUrls] = useState<MediaUrlMap>({});
   const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
@@ -73,6 +76,9 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const objectUrlsRef = useRef<string[]>([]);
+  const storeRef = useRef<IndexedDbProjectStore | null>(null);
+  if (!storeRef.current) storeRef.current = new IndexedDbProjectStore();
+  const store = storeRef.current;
 
   const sequence = project.sequences[0]!;
   const fps = sequence.frameRate.numerator / sequence.frameRate.denominator;
@@ -101,9 +107,65 @@ export default function App() {
     [project.media],
   );
 
-  useEffect(() => () => {
-    for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
-  }, []);
+  useEffect(() => {
+    let cancelled = false;
+    async function restoreProject() {
+      try {
+        const stored = await store.loadProject(LOCAL_PROJECT_ID);
+        const restored = stored ?? createEmptyProject({
+          id: LOCAL_PROJECT_ID,
+          name: "پروژه بدون عنوان",
+        });
+        const restoredUrls: MediaUrlMap = {};
+        for (const media of restored.media) {
+          const blob = await store.loadMedia(media.id);
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            restoredUrls[media.id] = url;
+            objectUrlsRef.current.push(url);
+          }
+        }
+        if (cancelled) {
+          Object.values(restoredUrls).forEach((url) => URL.revokeObjectURL(url));
+          return;
+        }
+        setProject(restored);
+        setMediaUrls(restoredUrls);
+        setIsLoading(false);
+        if (!stored) await store.saveProject(restored);
+        if (stored && restored.media.length !== Object.keys(restoredUrls).length) {
+          setNotice("برخی فایل‌های رسانه در حافظه محلی پیدا نشدند؛ باید دوباره وارد شوند.");
+        } else {
+          setNotice("پروژه و رسانه‌های ذخیره‌شده از حافظه محلی بازیابی شدند.");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setNotice(error instanceof Error ? error.message : "بازیابی پروژه محلی ناموفق بود.");
+          setIsLoading(false);
+        }
+      }
+    }
+    void restoreProject();
+    return () => {
+      cancelled = true;
+      for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
+      objectUrlsRef.current = [];
+      store.close();
+    };
+  }, [store]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    let active = true;
+    void store.saveProject(project).then(() => {
+      if (active) setNotice((current) =>
+        current.startsWith("پروژه") ? current : "پروژه به‌صورت خودکار در حافظه محلی ذخیره شد.",
+      );
+    }).catch((error: unknown) => {
+      if (active) setNotice(error instanceof Error ? error.message : "ذخیره محلی پروژه ناموفق بود.");
+    });
+    return () => { active = false; };
+  }, [project, isLoading, store]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -136,13 +198,14 @@ export default function App() {
       const url = URL.createObjectURL(file);
       try {
         const metadata = await readMediaMetadata(file, url);
+        await store.saveMedia(id, file, file.name);
         objectUrlsRef.current.push(url);
         urls[id] = url;
         imported.push({
           id,
           kind: file.type.startsWith("audio/") ? "audio" : "video",
           name: file.name,
-          sourceUri: "session-media://" + id,
+          sourceUri: "indexeddb://media/" + id,
           ...metadata,
         });
       } catch (error) {
@@ -160,7 +223,7 @@ export default function App() {
       setProject(next);
       setMediaUrls((current) => ({ ...current, ...urls }));
       setSelectedMediaId(imported[0]!.id);
-      setNotice(imported.length + " فایل رسانه به پنل پروژه اضافه شد.");
+      setNotice(imported.length + " فایل رسانه در حافظه محلی ذخیره و به پروژه اضافه شد.");
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
@@ -276,6 +339,14 @@ export default function App() {
     setIsPlaying(false);
   }
 
+  if (isLoading) {
+    return <main className="loading-screen" dir="rtl">
+      <div className="preview-mark">AE</div>
+      <strong>در حال بازیابی پروژه</strong>
+      <span>در حال خواندن پروژه و رسانه‌ها از حافظه محلی مرورگر…</span>
+    </main>;
+  }
+
   return (
     <main className="editor-app" dir="rtl">
       <header className="editor-topbar">
@@ -295,8 +366,8 @@ export default function App() {
           <span className="project-format">{sequence.width} × {sequence.height} · {fps} FPS</span>
         </div>
         <div className="topbar-actions">
-          <span className="local-badge">LOCAL SESSION</span>
-          <button className="primary-button" onClick={() => fileInputRef.current?.click()}>
+          <span className="local-badge">LOCAL STORAGE</span>
+          <button className="primary-button" disabled={isLoading} onClick={() => fileInputRef.current?.click()}>
             <span>＋</span> واردکردن رسانه
           </button>
           <input
@@ -316,7 +387,7 @@ export default function App() {
             <div><span className="overline">PROJECT ASSETS</span><h2>رسانه‌ها</h2></div>
             <span className="count-pill">{project.media.length}</span>
           </div>
-          <button className="import-dropzone" onClick={() => fileInputRef.current?.click()}>
+          <button className="import-dropzone" disabled={isLoading} onClick={() => fileInputRef.current?.click()}>
             <span className="upload-icon">↥</span>
             <strong>افزودن فایل ویدئو یا صدا</strong>
             <small>MP4 · MOV · WEBM · MP3 · WAV</small>
@@ -344,7 +415,7 @@ export default function App() {
             ))}
           </div>
           <div className="media-panel-bottom">
-            <span className="tiny-status" /> رسانه‌ها فقط در حافظه همین نشست هستند
+            <span className="tiny-status" /> رسانه‌ها در حافظه محلی مرورگر ذخیره می‌شوند
           </div>
         </aside>
 
@@ -504,7 +575,7 @@ export default function App() {
 
       <footer className="editor-statusbar">
         <span><i /> {notice}</span>
-        <span>پروژه محلی · بدون بارگذاری رسانه به سرور</span>
+        <span>ذخیره خودکار محلی · رسانه‌ها به سرور آپلود نمی‌شوند</span>
       </footer>
     </main>
   );
