@@ -2,11 +2,32 @@ name: Agent Editor CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, product/video-editor-pivot]
   pull_request:
     branches: [main]
 
 jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install frontend
+        run: npm install
+      - name: Report dependency advisories
+        run: |
+          npm audit --json > /tmp/agent-editor-audit.json || true
+          node -e 'const r=require("/tmp/agent-editor-audit.json"); const v=r.vulnerabilities||{}; console.log(JSON.stringify(Object.entries(v).map(([name,item])=>({name,severity:item.severity,direct:item.isDirect,range:item.range,fixAvailable:item.fixAvailable,advisories:(item.via||[]).map(x=>typeof x==="string"?x:x.title)})),null,2))'
+      - name: Run project core tests
+        run: npm test
+      - name: Typecheck and build frontend
+        run: npm run build
+
   backend:
     runs-on: ubuntu-latest
     defaults:
@@ -25,18 +46,3 @@ jobs:
         run: pytest
       - name: Lint backend
         run: ruff check .
-
-  frontend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Install frontend
-        run: npm install
-      - name: Build frontend
-        run: npm run build
