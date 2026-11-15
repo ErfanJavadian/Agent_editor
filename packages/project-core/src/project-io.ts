@@ -32,50 +32,63 @@ export function parseProjectDocument(source: string): ProjectDocument {
       !Array.isArray(value.sequences)) {
     throw new Error("Project document is missing required fields");
   }
+  if (value.schemaVersion !== 1) {
+    throw new Error("Unsupported project schema version: " + value.schemaVersion);
+  }
 
-  for (const media of value.media) {
-    if (!isRecord(media) ||
-        !hasString(media, "id") ||
-        !hasString(media, "kind") ||
-        !hasString(media, "name") ||
-        !hasString(media, "sourceUri")) {
-      throw new Error("Project contains an invalid media asset");
+  for (const mediaValue of value.media) {
+    if (!isRecord(mediaValue)) throw new Error("Project contains an invalid media asset");
+    if (!hasString(mediaValue, "id") ||
+        !hasString(mediaValue, "kind") ||
+        !hasString(mediaValue, "name") ||
+        !hasString(mediaValue, "sourceUri")) {
+      throw new Error("Project media asset is missing required fields");
     }
     for (const key of ["durationFrames", "width", "height"]) {
-      if (media[key] !== undefined && typeof media[key] !== "number") {
+      if (mediaValue[key] !== undefined && typeof mediaValue[key] !== "number") {
         throw new Error("Media field must be numeric: " + key);
       }
     }
   }
 
-  for (const sequence of value.sequences) {
-    if (!isRecord(sequence) ||
-        !hasString(sequence, "id") ||
-        !hasString(sequence, "name") ||
-        !hasNumber(sequence, "width") ||
-        !hasNumber(sequence, "height") ||
-        !isRecord(sequence.frameRate) ||
-        !hasNumber(sequence.frameRate.numerator) ||
-        !hasNumber(sequence.frameRate.denominator) ||
-        !Array.isArray(sequence.tracks)) {
-      throw new Error("Project contains an invalid sequence");
+  for (const sequenceValue of value.sequences) {
+    if (!isRecord(sequenceValue)) throw new Error("Project contains an invalid sequence object");
+    if (!hasString(sequenceValue, "id") ||
+        !hasString(sequenceValue, "name") ||
+        !hasNumber(sequenceValue, "width") ||
+        !hasNumber(sequenceValue, "height")) {
+      throw new Error("Project sequence is missing required fields");
     }
 
-    for (const track of sequence.tracks) {
-      if (!isRecord(track) ||
-          !hasString(track, "id") ||
-          !hasString(track, "name") ||
-          !hasString(track, "kind") ||
-          !Array.isArray(track.clips)) {
-        throw new Error("Project contains an invalid track");
+    const frameRateValue = sequenceValue.frameRate;
+    if (!isRecord(frameRateValue)) {
+      throw new Error("Project sequence frameRate must be an object");
+    }
+    if (!hasNumber(frameRateValue, "numerator") ||
+        !hasNumber(frameRateValue, "denominator")) {
+      throw new Error("Project sequence frameRate is invalid");
+    }
+
+    const tracksValue = sequenceValue.tracks;
+    if (!Array.isArray(tracksValue)) throw new Error("Project sequence tracks must be an array");
+
+    for (const trackValue of tracksValue) {
+      if (!isRecord(trackValue)) throw new Error("Project contains an invalid track object");
+      if (!hasString(trackValue, "id") ||
+          !hasString(trackValue, "name") ||
+          !hasString(trackValue, "kind")) {
+        throw new Error("Project track is missing required fields");
       }
-      for (const clip of track.clips) {
-        if (!isRecord(clip) ||
-            !hasString(clip, "id") ||
-            !hasString(clip, "mediaId") ||
-            !hasNumber(clip, "sourceStartFrame") ||
-            !hasNumber(clip, "sourceEndFrame") ||
-            !hasNumber(clip, "timelineStartFrame")) {
+      const clipsValue = trackValue.clips;
+      if (!Array.isArray(clipsValue)) throw new Error("Project track clips must be an array");
+
+      for (const clipValue of clipsValue) {
+        if (!isRecord(clipValue) ||
+            !hasString(clipValue, "id") ||
+            !hasString(clipValue, "mediaId") ||
+            !hasNumber(clipValue, "sourceStartFrame") ||
+            !hasNumber(clipValue, "sourceEndFrame") ||
+            !hasNumber(clipValue, "timelineStartFrame")) {
           throw new Error("Project contains an invalid timeline clip");
         }
       }
