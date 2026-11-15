@@ -174,3 +174,7 @@ button:disabled { opacity: .35; cursor: not-allowed !important; }
   .timeline-footer { font-size:7px; }
   .editor-statusbar { align-items:flex-start; flex-direction:column; justify-content:center; gap:3px; padding:6px 10px; }
 }
+
+.loading-screen { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:13px; background:radial-gradient(ellipse at center,rgba(213,180,119,.09),transparent 38rem),#0b0d12; color:#e9eaf0; }
+.loading-screen strong { font-size:13px; }
+.loading-screen span { color:#858d9e; font-size:10px; }
