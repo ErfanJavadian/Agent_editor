@@ -64,7 +64,6 @@ export default function App() {
   const [mediaUrls, setMediaUrls] = useState<MediaUrlMap>({});
   const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
-  const [selectedTrackId, setSelectedTrackId] = useState("track-video-1");
   const [playhead, setPlayhead] = useState(0);
   const [notice, setNotice] = useState("برای شروع، فایل ویدئو یا صدا را وارد کن.");
   const [isPlaying, setIsPlaying] = useState(false);
@@ -86,14 +85,11 @@ export default function App() {
     300,
     ...allClips.map(({ clip }) => timelineEnd(clip)),
   );
-  const activeVideoEntry = selectedEntry?.clip.mediaId &&
-    project.media.find((item) => item.id === selectedEntry.clip.mediaId)?.kind === "video"
-    ? selectedEntry
-    : allClips.find(({ clip, track }) =>
-        track.kind === "video" &&
-        playhead >= clip.timelineStartFrame &&
-        playhead < timelineEnd(clip),
-      ) ?? null;
+  const activeVideoEntry = allClips.find(({ clip, track }) =>
+    track.kind === "video" &&
+    playhead >= clip.timelineStartFrame &&
+    playhead < timelineEnd(clip),
+  ) ?? null;
   const activeVideoMedia = activeVideoEntry
     ? project.media.find((item) => item.id === activeVideoEntry.clip.mediaId) ?? null
     : null;
@@ -185,7 +181,6 @@ export default function App() {
       const next = insertClip(project, sequence.id, targetTrack.id, clip);
       applyProject(next);
       setSelectedClipId(clip.id);
-      setSelectedTrackId(targetTrack.id);
       setPlayhead(clip.timelineStartFrame);
       setNotice("کلیپ به تایم‌لاین اضافه شد.");
     } catch (error) {
@@ -193,25 +188,27 @@ export default function App() {
     }
   }
 
-  function runTimelineOperation(operation: () => ProjectDocument, success: string) {
+  function runTimelineOperation(operation: () => ProjectDocument, success: string): boolean {
     try {
       applyProject(operation());
       setNotice(success);
+      return true;
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "عملیات تدوین ناموفق بود.");
+      return false;
     }
   }
 
   function splitSelectedClip() {
     if (!selectedEntry) return;
     const rightId = crypto.randomUUID();
-    runTimelineOperation(
+    const succeeded = runTimelineOperation(
       () => splitTimelineClip(
         project, sequence.id, selectedEntry.track.id, selectedEntry.clip.id, playhead, rightId,
       ),
       "کلیپ در محل نشانگر پخش برش خورد.",
     );
-    setSelectedClipId(rightId);
+    if (succeeded) setSelectedClipId(rightId);
   }
 
   function moveSelectedClip(delta: number) {
@@ -412,7 +409,7 @@ export default function App() {
                   <div className="track-row" key={track.id}>
                     <button
                       className={"track-label " + track.kind}
-                      onClick={() => setSelectedTrackId(track.id)}
+                      onClick={() => setNotice(track.name + " انتخاب شد.")}
                     >
                       <strong>{track.kind === "video" ? "▣" : "♫"} {track.name}</strong>
                       <small>{track.kind === "video" ? "VIDEO" : "AUDIO"}</small>
