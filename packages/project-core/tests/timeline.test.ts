@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createEmptyProject, validateProject } from "../src/project";
+import { parseProjectDocument, serializeProjectDocument } from "../src/project-io";
 import { insertClip, moveClip, splitClip, trimClip } from "../src/timeline";
 import type { ProjectDocument } from "../src/types";
 
@@ -30,6 +31,25 @@ const clip = {
 };
 
 describe("project core", () => {
+  it("round-trips a valid project manifest", () => {
+    const project = fixture();
+    const parsed = parseProjectDocument(serializeProjectDocument(project));
+    expect(parsed).toEqual(project);
+  });
+
+  it("rejects malformed project JSON", () => {
+    expect(() => parseProjectDocument("{not-json")).toThrow(/valid JSON/i);
+    expect(() => parseProjectDocument(JSON.stringify({ schemaVersion: 1 })))
+      .toThrow(/missing required fields/i);
+  });
+
+  it("rejects an unsupported project schema version", () => {
+    const project = fixture();
+    const unsupported = { ...project, schemaVersion: 99 };
+    expect(() => parseProjectDocument(JSON.stringify(unsupported)))
+      .toThrow(/unsupported project schema/i);
+  });
+
   it("creates a versioned project with video and audio tracks", () => {
     const project = fixture();
     expect(project.schemaVersion).toBe(1);
