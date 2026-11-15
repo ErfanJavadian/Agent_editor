@@ -36,7 +36,8 @@
 - [x] Add browser prototype with media bin, preview, two tracks, playhead, and clip selection.
 - [x] Add basic UI undo/redo history.
 - [x] Add clip removal without deleting source media.
-- [ ] Add direct drag-and-drop clip editing and keyboard shortcuts.
+- [x] Add direct drag-and-drop media placement and clip movement across compatible tracks.
+- [x] Add keyboard shortcuts for playback, split, delete, undo, and redo.
 - [x] Add browser-local persistent save/reopen and automatic project recovery.
 - [ ] Add audio preview synchronization and waveform display.
 - [ ] Add a desktop timeline UI and export workflow.
@@ -75,8 +76,10 @@
 
 ## Verified evidence
 
-- Project core: **15 tests passed**; IndexedDB adapter: **3 tests passed**; total **18/18** in GitHub Actions at commit `27b555b`.
+- Project core: **17 tests passed**; IndexedDB adapter: **3 tests passed**; total **20/20** in GitHub Actions at commit `84722f2`.
 - Frontend: TypeScript check and Vite production build passed at the same commit.
+- Backend: pytest and Ruff checks passed at the same commit.
+- Frontend dependency audit: zero vulnerabilities after the Vitest security upgrade.
 - Frontend dependency audit: **0 vulnerabilities** at commit `27b555b`.
 - Backend: existing pytest suite and Ruff lint passed in the same workflow.
 - Manual testing on Android and desktop has **not** yet been performed.
