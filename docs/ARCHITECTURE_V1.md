@@ -1,3 +1,7 @@
+> **وضعیت سند:** این سند مربوط به محصول قبلی Agent Workbench است و معماری جاری Agent Editor ویرایشگر ویدئو محسوب نمی‌شود. برای معماری معتبر به [VIDEO_EDITOR_ARCHITECTURE_V1.md](VIDEO_EDITOR_ARCHITECTURE_V1.md) و [PRODUCT_DIRECTION.md](PRODUCT_DIRECTION.md) مراجعه کن. این فایل صرفاً برای حفظ سابقه تصمیم‌ها نگهداری شده است.
+
+---
+
 # معماری نسخه ۱ — Agent Editor
 
 - وضعیت: سند طراحی / هنوز پیاده‌سازی نشده
