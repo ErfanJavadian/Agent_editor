@@ -93,17 +93,17 @@ button:disabled { opacity: .35; cursor: not-allowed !important; }
 .timeline-heading { display:flex; justify-content:space-between; align-items:center; padding:16px 16px 11px; }
 .add-timeline-button { padding:7px 10px; font-size:9px; }
 .timeline-scroll { flex:1; min-height:190px; max-height:310px; overflow:auto; background:#0d1118; }
-.timeline-canvas { position:relative; min-height:100%; padding-right:80px; }
-.ruler { height:27px; position:relative; margin-right:80px; border-bottom:1px solid var(--line); background:repeating-linear-gradient(90deg,transparent 0,transparent 39px,rgba(255,255,255,.035) 40px); }
+.timeline-canvas { position:relative; min-height:100%; padding-left:80px; padding-right:0; direction:ltr; }
+.ruler { height:27px; position:relative; width:calc(100% - 80px); margin-left:80px; margin-right:0; border-bottom:1px solid var(--line); background:repeating-linear-gradient(90deg,transparent 0,transparent 39px,rgba(255,255,255,.035) 40px); }
 .ruler button { position:absolute; top:5px; transform:translateX(50%); border:0; background:transparent; color:#737e90; font:8px ui-monospace,monospace; cursor:pointer; direction:ltr; }
 .track-stack { display:grid; gap:7px; padding:9px 0 15px; }
-.track-row { min-height:57px; display:flex; align-items:stretch; }
-.track-label { position:absolute; right:0; z-index:2; width:80px; height:57px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:5px; padding:0 9px; border:0; border-left:1px solid var(--line); background:#111720; text-align:right; cursor:pointer; }
+.track-row { min-height:57px; display:flex; align-items:stretch; direction:ltr; }
+.track-label { position:absolute; left:0; right:auto; z-index:2; width:80px; height:57px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:5px; padding:0 9px; border:0; border-left:1px solid var(--line); background:#111720; text-align:right; cursor:pointer; }
 .track-label strong { font-size:9px; font-weight:600; }
 .track-label.video strong { color:#91b5e9; }
 .track-label.audio strong { color:#c3a0e0; }
 .track-label small { color:#626d7f; font:7px ui-monospace,monospace; letter-spacing:1px; }
-.track-lane { position:relative; min-height:57px; width:100%; margin-right:80px; border:1px solid rgba(255,255,255,.035); border-radius:4px; background:repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0,rgba(255,255,255,.012) 39px,rgba(255,255,255,.035) 40px); }
+.track-lane { position:relative; min-height:57px; width:calc(100% - 80px); margin-left:80px; margin-right:0; border:1px solid rgba(255,255,255,.035); border-radius:4px; background:repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0,rgba(255,255,255,.012) 39px,rgba(255,255,255,.035) 40px); }
 .timeline-clip { position:absolute; top:5px; height:45px; overflow:hidden; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:3px; padding:0 9px; border:1px solid rgba(125,169,232,.36); border-radius:5px; background:linear-gradient(100deg,rgba(64,104,158,.65),rgba(39,68,107,.76)); text-align:right; cursor:pointer; }
 .timeline-clip.audio { border-color:rgba(179,139,210,.4); background:linear-gradient(100deg,rgba(110,75,136,.66),rgba(70,47,92,.75)); }
 .timeline-clip.clip-selected { outline:1px solid var(--gold); outline-offset:1px; }
