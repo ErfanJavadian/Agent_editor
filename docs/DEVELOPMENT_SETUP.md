@@ -50,7 +50,7 @@ npm run typecheck
 npm run build
 ```
 
-تست‌های هسته مشترک در `packages/project-core/tests` قرار دارند و از طریق اسکریپت Vitest در ریشه مخزن کشف می‌شوند.
+تست‌های هسته مشترک در `packages/project-core/tests` و تست‌های IndexedDB در `frontend/tests` قرار دارند؛ اسکریپت Vitest هر دو مجموعه را اجرا می‌کند. در آخرین اجرای CI، هر ۲۰ تست موفق شدند.
 
 ## وضعیت محدودیت‌های prototype فعلی
 
