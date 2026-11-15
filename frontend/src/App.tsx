@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import {
   createEmptyProject,
   insertClip,
   moveClip as moveTimelineClip,
+  moveClipToTrack as moveClipAcrossTracks,
   removeClip as removeTimelineClip,
   splitClip as splitTimelineClip,
   trimClip as trimTimelineClip,
@@ -263,6 +264,59 @@ export default function App() {
     }
   }
 
+  function handleTimelineDrop(event: DragEvent<HTMLDivElement>, targetTrack: TimelineTrack) {
+    event.preventDefault();
+    const raw = event.dataTransfer.getData("application/x-agent-editor-item");
+    if (!raw) return;
+
+    let payload: { type?: string; mediaId?: string; clipId?: string; trackId?: string };
+    try {
+      payload = JSON.parse(raw) as typeof payload;
+    } catch {
+      setNotice("اطلاعات Drag & Drop معتبر نیست.");
+      return;
+    }
+
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const frame = Math.max(0, Math.round((event.clientX - bounds.left) / PIXELS_PER_FRAME));
+
+    if (payload.type === "clip" && payload.clipId && payload.trackId) {
+      const entry = allClips.find((item) => item.clip.id === payload.clipId);
+      if (!entry || entry.track.id !== payload.trackId) return;
+      const succeeded = runTimelineOperation(
+        () => moveClipAcrossTracks(
+          project, sequence.id, entry.track.id, targetTrack.id, entry.clip.id, frame,
+        ),
+        "کلیپ به موقعیت جدید منتقل شد.",
+      );
+      if (succeeded) {
+        setSelectedClipId(entry.clip.id);
+        setPlayhead(frame);
+      }
+      return;
+    }
+
+    if (payload.type === "media" && payload.mediaId) {
+      const media = project.media.find((item) => item.id === payload.mediaId);
+      if (!media) return;
+      const clip: TimelineClip = {
+        id: crypto.randomUUID(),
+        mediaId: media.id,
+        sourceStartFrame: 0,
+        sourceEndFrame: media.durationFrames ?? 150,
+        timelineStartFrame: frame,
+      };
+      const succeeded = runTimelineOperation(
+        () => insertClip(project, sequence.id, targetTrack.id, clip),
+        "رسانه در محل رهاشده به تایم‌لاین اضافه شد.",
+      );
+      if (succeeded) {
+        setSelectedClipId(clip.id);
+        setPlayhead(frame);
+      }
+    }
+  }
+
   function splitSelectedClip() {
     if (!selectedEntry) return;
     const rightId = crypto.randomUUID();
@@ -402,6 +456,11 @@ export default function App() {
               <button
                 key={media.id}
                 className={"asset-item" + (selectedMediaId === media.id ? " selected" : "")}
+                draggable
+                onDragStart={(event) => {
+                  event.dataTransfer.setData("application/x-agent-editor-item", JSON.stringify({ type: "media", mediaId: media.id }));
+                  event.dataTransfer.effectAllowed = "copy";
+                }}
                 onClick={() => setSelectedMediaId(media.id)}
               >
                 <span className={"asset-thumb " + media.kind}>
@@ -496,7 +555,11 @@ export default function App() {
                       <strong>{track.kind === "video" ? "▣" : "♫"} {track.name}</strong>
                       <small>{track.kind === "video" ? "VIDEO" : "AUDIO"}</small>
                     </button>
-                    <div className="track-lane">
+                    <div
+                      className="track-lane"
+                      onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = "move"; }}
+                      onDrop={(event) => handleTimelineDrop(event, track)}
+                    >
                       {track.clips.map((clip) => {
                         const media = project.media.find((item) => item.id === clip.mediaId);
                         return (
@@ -504,6 +567,11 @@ export default function App() {
                             key={clip.id}
                             className={"timeline-clip " + track.kind +
                               (selectedClipId === clip.id ? " clip-selected" : "")}
+                            draggable
+                            onDragStart={(event) => {
+                              event.dataTransfer.setData("application/x-agent-editor-item", JSON.stringify({ type: "clip", clipId: clip.id, trackId: track.id }));
+                              event.dataTransfer.effectAllowed = "move";
+                            }}
                             style={{
                               left: clip.timelineStartFrame * PIXELS_PER_FRAME,
                               width: Math.max(76, clipDuration(clip) * PIXELS_PER_FRAME),
@@ -520,7 +588,7 @@ export default function App() {
                           </button>
                         );
                       })}
-                      {track.clips.length === 0 && <span className="lane-hint">رسانه را از پنل پروژه به این ترک اضافه کن</span>}
+                      {track.clips.length === 0 && <span className="lane-hint">رسانه یا کلیپ را اینجا رها کن</span>}
                     </div>
                   </div>
                 ))}
