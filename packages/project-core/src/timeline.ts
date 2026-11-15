@@ -41,6 +41,20 @@ export function insertClip(
   return commit(project);
 }
 
+export function removeClip(
+  source: ProjectDocument,
+  sequenceId: string,
+  trackId: string,
+  clipId: string,
+): ProjectDocument {
+  const project = cloneProject(source);
+  const track = findTrack(project, sequenceId, trackId);
+  const index = track.clips.findIndex((clip) => clip.id === clipId);
+  if (index < 0) throw new Error("Clip not found: " + clipId);
+  track.clips.splice(index, 1);
+  return commit(project);
+}
+
 export function moveClip(
   source: ProjectDocument,
   sequenceId: string,
