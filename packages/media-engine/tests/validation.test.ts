@@ -52,7 +52,7 @@ describe("media engine contracts", () => {
   it("rejects invalid frame ranges and odd output dimensions", () => {
     const invalid: RenderRequest = {
       ...request,
-      range: { startFrame: -1, endFrame: 0 },
+      range: { startFrame: -1, endFrame: -1 },
       profile: { ...request.profile, width: 1919 },
     };
     const errors = validateRenderRequest(invalid);
