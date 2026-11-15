@@ -393,6 +393,48 @@ export default function App() {
     setIsPlaying(false);
   }
 
+  useEffect(() => {
+    function handleShortcut(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName;
+      if (target?.isContentEditable || tagName === "INPUT" ||
+          tagName === "TEXTAREA" || tagName === "SELECT") return;
+
+      const modifier = event.ctrlKey || event.metaKey;
+      if (modifier && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        if (event.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if (modifier && event.key.toLowerCase() === "y") {
+        event.preventDefault();
+        redo();
+        return;
+      }
+      if (event.code === "Space") {
+        event.preventDefault();
+        if (videoRef.current) {
+          if (videoRef.current.paused) void videoRef.current.play();
+          else videoRef.current.pause();
+        }
+        return;
+      }
+      if (event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        splitSelectedClip();
+        return;
+      }
+      if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault();
+        deleteSelectedClip();
+      }
+    }
+
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [project, selectedEntry, playhead, past, future, isPlaying]);
+
   if (isLoading) {
     return <main className="loading-screen" dir="rtl">
       <div className="preview-mark">AE</div>
@@ -600,6 +642,7 @@ export default function App() {
           </div>
           <div className="timeline-footer">
             <span>{tracks.reduce((sum, track) => sum + track.clips.length, 0)} کلیپ</span>
+            <span>Space پخش · S برش · Ctrl+Z بازگشت · Delete حذف</span>
             <span>زمان بر اساس فریم صحیح · {fps} فریم بر ثانیه</span>
             <span>{formatTime(durationFrames, fps)} محدوده نمایش</span>
           </div>
