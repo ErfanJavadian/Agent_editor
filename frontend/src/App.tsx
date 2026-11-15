@@ -3,6 +3,7 @@ import {
   createEmptyProject,
   insertClip,
   moveClip as moveTimelineClip,
+  removeClip as removeTimelineClip,
   splitClip as splitTimelineClip,
   trimClip as trimTimelineClip,
   type MediaAsset,
@@ -222,6 +223,15 @@ export default function App() {
     );
   }
 
+  function deleteSelectedClip() {
+    if (!selectedEntry) return;
+    const succeeded = runTimelineOperation(
+      () => removeTimelineClip(project, sequence.id, selectedEntry.track.id, selectedEntry.clip.id),
+      "کلیپ از تایم‌لاین حذف شد؛ فایل اصلی رسانه دست‌نخورده باقی ماند.",
+    );
+    if (succeeded) setSelectedClipId(null);
+  }
+
   function trimSelectedEnd() {
     if (!selectedEntry) return;
     runTimelineOperation(
@@ -384,6 +394,7 @@ export default function App() {
               <button onClick={() => moveSelectedClip(-fps)} disabled={!selectedEntry}>−۱ ثانیه</button>
               <button onClick={() => moveSelectedClip(fps)} disabled={!selectedEntry}>+۱ ثانیه</button>
               <button onClick={trimSelectedEnd} disabled={!selectedEntry}>Trim پایان</button>
+              <button onClick={deleteSelectedClip} disabled={!selectedEntry}>حذف کلیپ</button>
             </div>
             <div className="time-display">{formatTime(playhead, fps)}</div>
           </div>
