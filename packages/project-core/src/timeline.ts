@@ -41,6 +41,33 @@ export function insertClip(
   return commit(project);
 }
 
+export function moveClipToTrack(
+  source: ProjectDocument,
+  sequenceId: string,
+  fromTrackId: string,
+  toTrackId: string,
+  clipId: string,
+  newTimelineStartFrame: number,
+): ProjectDocument {
+  if (!Number.isSafeInteger(newTimelineStartFrame) || newTimelineStartFrame < 0) {
+    throw new Error("New timeline position must be a non-negative safe integer");
+  }
+  if (fromTrackId === toTrackId) {
+    return moveClip(source, sequenceId, fromTrackId, clipId, newTimelineStartFrame);
+  }
+
+  const project = cloneProject(source);
+  const fromTrack = findTrack(project, sequenceId, fromTrackId);
+  const toTrack = findTrack(project, sequenceId, toTrackId);
+  const index = fromTrack.clips.findIndex((clip) => clip.id === clipId);
+  if (index < 0) throw new Error("Clip not found: " + clipId);
+  const [clip] = fromTrack.clips.splice(index, 1);
+  if (!clip) throw new Error("Clip not found: " + clipId);
+  clip.timelineStartFrame = newTimelineStartFrame;
+  toTrack.clips.push(clip);
+  return commit(project);
+}
+
 export function removeClip(
   source: ProjectDocument,
   sequenceId: string,
