@@ -27,13 +27,15 @@
 - [x] Add fixture tests for schema, serialization, and invalid references.
 - [ ] Add schema migrations and compatibility tests for future versions.
 - [ ] Add rational timebase conversion utilities.
-- [ ] Implement persistent asset registry and safe media relinking.
+- [x] Implement browser-local IndexedDB persistence for project manifests and imported media blobs.
+- [ ] Implement safe media relinking and cross-device asset packaging.
 
 ## Phase 3 — Timeline vertical slice
 - [x] Implement immutable insert, move, trim, and split operations.
 - [x] Enforce non-negative integer frame positions and no same-track overlaps.
 - [x] Add browser prototype with media bin, preview, two tracks, playhead, and clip selection.
 - [x] Add basic UI undo/redo history.
+- [x] Add clip removal without deleting source media.
 - [ ] Add direct drag-and-drop clip editing and keyboard shortcuts.
 - [ ] Add persistent save/reopen and project recovery.
 - [ ] Add audio preview synchronization and waveform display.
@@ -63,7 +65,8 @@
 - [ ] Document unsupported-feature behavior and media relinking.
 
 ## Phase 7 — Hardening and release readiness
-- [x] Add CI for project-core tests, frontend typecheck/build, backend tests, and backend lint.
+- [x] Add CI for project-core and IndexedDB tests, frontend typecheck/build, backend tests, and backend lint.
+- [x] Upgrade Vitest to a patched release; npm audit reported zero vulnerabilities.
 - [ ] Add cross-platform integration tests.
 - [ ] Add performance, memory, crash-recovery, and cancellation tests.
 - [ ] Security review for imported projects and agent tools.
@@ -72,11 +75,12 @@
 
 ## Verified evidence
 
-- Project core: **14/14 tests passed** in GitHub Actions at commit `3b4ce9a`.
+- Project core + IndexedDB adapter: **18/18 tests passed** in GitHub Actions at commit `27b555b`.
 - Frontend: TypeScript check and Vite production build passed at the same commit.
+- Frontend dependency audit: **0 vulnerabilities** at commit `27b555b`.
 - Backend: existing pytest suite and Ruff lint passed in the same workflow.
 - Manual testing on Android and desktop has **not** yet been performed.
-- The browser editor currently keeps imported media in temporary object URLs; persistent media management and export are not implemented.
+- Project manifests and imported media blobs persist in browser IndexedDB; media package export, relinking, and native asset management are not implemented.
 
 ## Progress vocabulary
 
