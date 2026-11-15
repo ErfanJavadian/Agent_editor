@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createEmptyProject, validateProject } from "../src/project";
 import { parseProjectDocument, serializeProjectDocument } from "../src/project-io";
-import { insertClip, moveClip, removeClip, splitClip, trimClip } from "../src/timeline";
+import { insertClip, moveClip, moveClipToTrack, removeClip, splitClip, trimClip } from "../src/timeline";
 import type { ProjectDocument } from "../src/types";
 
 function fixture(): ProjectDocument {
@@ -100,6 +100,27 @@ describe("project core", () => {
     });
     expect(() => moveClip(withSecond, "sequence-main", "track-video-1", "clip-1", 30))
       .toThrow(/overlap/i);
+  });
+
+  it("moves a clip between compatible tracks without mutating the source project", () => {
+    const project = fixture();
+    project.sequences[0]!.tracks.push({
+      id: "track-video-2", name: "Video 2", kind: "video", clips: [],
+    });
+    const withClip = insertClip(project, "sequence-main", "track-video-1", clip);
+    const moved = moveClipToTrack(
+      withClip, "sequence-main", "track-video-1", "track-video-2", "clip-1", 60,
+    );
+    expect(moved.sequences[0]?.tracks[0]?.clips).toHaveLength(0);
+    expect(moved.sequences[0]?.tracks[2]?.clips[0]?.timelineStartFrame).toBe(60);
+    expect(withClip.sequences[0]?.tracks[0]?.clips).toHaveLength(1);
+  });
+
+  it("rejects moving video media to an audio track", () => {
+    const project = insertClip(fixture(), "sequence-main", "track-video-1", clip);
+    expect(() => moveClipToTrack(
+      project, "sequence-main", "track-video-1", "track-audio-1", "clip-1", 0,
+    )).toThrow(/only audio media/i);
   });
 
   it("trims the start while keeping source and timeline frames aligned", () => {
