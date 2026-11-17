@@ -45,3 +45,15 @@ Agent Editor یک ابزار مهندسی اختصاصی و تک‌کاربره 
 ## وضعیت توسعه
 
 فاز ۱ شامل ساخت اسکلت Backend، Frontend، endpoint سلامت، تست پایه و CI است. تا زمان اجرای تست‌ها در محیط هدف، این اسکلت «ایجادشده» محسوب می‌شود و نه «تأییدشده در اجرا».
+
+
+## اتصال Nango به Agentها
+
+Backend یک اتصال اولیه به [Nango Agent Sessions](https://nango.dev/docs/getting-started/quickstart.md) دارد:
+- ساخت خودکار Integration اولیه GitHub با Nango-managed OAuth در صورت پشتیبانی
+- ایجاد نشست کوتاه‌مدت و محدود به GitHub برای کاربر محلی
+- ساخت لینک اتصال از طریق ابزار MCP به نام `nango_create_connection`
+- کشف ابزارهای کاتالوگ با `nango_tool_search`
+- نگهداری API key و session token فقط در Backend
+
+برای راه‌اندازی، بخش Nango در [راهنمای اجرای محلی](docs/PHASE_1_RUNBOOK.md) را دنبال کن. هسته اجرای Agent و Model Gateway هنوز در نقشه پیاده‌سازی قرار دارند؛ بنابراین این نسخه، پل اتصال و کشف ابزار را فراهم می‌کند و هنوز یک Agent مبتنی بر مدل را اجرا نمی‌کند.
