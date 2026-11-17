@@ -97,7 +97,7 @@ npm run build
 
 ```bash
 cd ~/Agent_editor
-cp .env.example .env
+test -f .env || cp .env.example .env
 nano .env
 ```
 
@@ -115,6 +115,7 @@ NANGO_USER_ID=agent-editor-local-user
    - روی **ساخت لینک اتصال GitHub** بزن.
    - لینک تأیید را باز کن و حساب GitHub موردنظر را مجاز کن.
    - پس از بازگشت، روی **کشف ابزارهای GitHub** بزن.
+   - برای تأیید اجرای واقعی یک ابزار، روی **اجرای تست read-only واقعی** بزن. این تست فقط metadata مخزن عمومی `NangoHQ/nango` را می‌خواند و چیزی را تغییر نمی‌دهد.
 
 Backend Integration با شناسه `github` را در صورت نیاز می‌سازد و یک نشست ۱۰ دقیقه‌ای می‌گیرد. ابزارها از طریق MCP کشف می‌شوند. کلید اصلی و session token به مرورگر ارسال نمی‌شوند.
 
@@ -123,6 +124,7 @@ Backend Integration با شناسه `github` را در صورت نیاز می‌
 - `GET /api/v1/integrations/nango/status`
 - `POST /api/v1/integrations/nango/github/connect`
 - `POST /api/v1/integrations/nango/tools/search`
+- `POST /api/v1/integrations/nango/github/test` (تست ثابت و فقط‌خواندنی)
 
 نمونه تست کشف ابزار با curl:
 
