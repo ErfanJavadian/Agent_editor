@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from app.integrations.nango import NangoService
 from app.main import create_app
 
+
 def test_nango_status_does_not_expose_credentials(monkeypatch) -> None:
     monkeypatch.setenv("NANGO_API_KEY", "test-secret")
     client = TestClient(create_app())
