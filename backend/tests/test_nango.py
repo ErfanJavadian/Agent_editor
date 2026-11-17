@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 from app.integrations.nango import NangoService
 from app.main import create_app
 
-
 def test_nango_status_does_not_expose_credentials(monkeypatch) -> None:
     monkeypatch.setenv("NANGO_API_KEY", "test-secret")
     client = TestClient(create_app())
@@ -16,7 +15,6 @@ def test_nango_status_does_not_expose_credentials(monkeypatch) -> None:
     assert response.json() == {"configured": True, "provider": "github"}
     assert "test-secret" not in response.text
 
-
 def test_nango_status_reports_missing_key(monkeypatch) -> None:
     monkeypatch.delenv("NANGO_API_KEY", raising=False)
     client = TestClient(create_app())
@@ -26,7 +24,6 @@ def test_nango_status_reports_missing_key(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.json()["configured"] is False
 
-
 def test_connect_requires_a_local_api_key(monkeypatch) -> None:
     monkeypatch.delenv("NANGO_API_KEY", raising=False)
     client = TestClient(create_app())
@@ -35,7 +32,6 @@ def test_connect_requires_a_local_api_key(monkeypatch) -> None:
 
     assert response.status_code == 503
     assert "NANGO_API_KEY" in response.json()["detail"]
-
 
 def test_session_is_scoped_to_one_local_user_and_github() -> None:
     service = NangoService()
@@ -47,7 +43,6 @@ def test_session_is_scoped_to_one_local_user_and_github() -> None:
     assert payload["toolset"] == {"github": "*"}
     assert payload["meta_tools"]["nango_create_connection"]["enabled"] is True
     assert payload["expires_in"] == "10m"
-
 
 def test_tool_result_finds_connect_url_in_nested_payload() -> None:
     payload = {
@@ -66,8 +61,6 @@ def test_tool_result_finds_connect_url_in_nested_payload() -> None:
         "https://connect.nango.dev/?session_token=temporary"
     )
 
-
-
 def test_repository_tool_is_selected_from_search_results() -> None:
     search_result = {
         "results": [
@@ -82,8 +75,6 @@ def test_repository_tool_is_selected_from_search_results() -> None:
     }
 
     assert NangoService._find_repository_tool(search_result) == "github__get-repository"
-
-
 
 def test_github_smoke_test_requires_a_local_api_key(monkeypatch) -> None:
     monkeypatch.delenv("NANGO_API_KEY", raising=False)
