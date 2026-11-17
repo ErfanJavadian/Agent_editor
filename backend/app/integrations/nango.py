@@ -7,9 +7,9 @@ sanitized tool-discovery results are returned to the local UI.
 from __future__ import annotations
 
 import json
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from collections.abc import AsyncIterator
 from typing import Any
 
 import httpx
