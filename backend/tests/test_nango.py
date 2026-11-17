@@ -82,3 +82,14 @@ def test_repository_tool_is_selected_from_search_results() -> None:
     }
 
     assert NangoService._find_repository_tool(search_result) == "github__get-repository"
+
+
+
+def test_github_smoke_test_requires_a_local_api_key(monkeypatch) -> None:
+    monkeypatch.delenv("NANGO_API_KEY", raising=False)
+    client = TestClient(create_app())
+
+    response = client.post("/api/v1/integrations/nango/github/test")
+
+    assert response.status_code == 503
+    assert "NANGO_API_KEY" in response.json()["detail"]
