@@ -30,13 +30,11 @@ class ToolSearchResponse(BaseModel):
 
     results: Any
 
-
 @router.get("/status", response_model=NangoStatusResponse)
 async def nango_status() -> NangoStatusResponse:
     """Report whether the local backend has a Nango API key."""
     settings = get_settings()
     return NangoStatusResponse(configured=bool(settings.nango_api_key))
-
 
 @router.post("/github/connect")
 async def create_github_connect_link() -> dict[str, str | None]:
@@ -47,7 +45,6 @@ async def create_github_connect_link() -> dict[str, str | None]:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except NangoAPIError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
-
 
 @router.post("/tools/search", response_model=ToolSearchResponse)
 async def search_nango_tools(request: ToolSearchRequest) -> ToolSearchResponse:
@@ -62,8 +59,6 @@ async def search_nango_tools(request: ToolSearchRequest) -> ToolSearchResponse:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except NangoAPIError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
-
-
 
 @router.post("/github/test")
 async def test_github_repository_read() -> dict[str, Any]:
