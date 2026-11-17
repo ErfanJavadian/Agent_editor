@@ -272,6 +272,31 @@ class NangoService:
             "expires_at": expires_at if isinstance(expires_at, str) else None,
         }
 
+    @staticmethod
+    def _find_repository_tool(value: Any) -> str | None:
+        """Find the catalog's read-only Get repository tool by its returned metadata."""
+        if isinstance(value, dict):
+            tool_name = value.get("tool")
+            action = str(value.get("action", "")).lower()
+            normalized_name = str(tool_name or "").lower()
+            is_repository_read = (
+                "get-repository" in action
+                or "get_repository" in action
+                or ("get" in normalized_name and "repository" in normalized_name)
+            )
+            if isinstance(tool_name, str) and is_repository_read:
+                return tool_name
+            for nested in value.values():
+                found = NangoService._find_repository_tool(nested)
+                if found:
+                    return found
+        elif isinstance(value, list):
+            for nested in value:
+                found = NangoService._find_repository_tool(nested)
+                if found:
+                    return found
+        return None
+
     async def search_tools(
         self, *, queries: list[str], goal: str
     ) -> Any:
@@ -283,3 +308,39 @@ class NangoService:
                 {"queries": queries[:5], "goal": goal},
             )
         return self._tool_result_data(result)
+
+    async def test_github_repository_read(self) -> Any:
+        """Execute one fixed, read-only GitHub repository lookup through Nango MCP."""
+        session = await self.create_session()
+        goal = "Read the public NangoHQ/nango GitHub repository metadata."
+        async with self.open_mcp_session(session) as mcp_client:
+            search_result = await mcp_client.call_tool(
+                "nango_tool_search",
+                {"queries": ["get repository metadata"], "goal": goal},
+            )
+            search_data = self._tool_result_data(search_result)
+            tool_name = self._find_repository_tool(search_data)
+            if not tool_name:
+                raise NangoAPIError(
+                    "Nango could not find the read-only GitHub Get repository tool."
+                )
+
+            execution_result = await mcp_client.call_tool(
+                "nango_execute",
+                {
+                    "tool": tool_name,
+                    "input": {"owner": "NangoHQ", "repo": "nango"},
+                    "goal": goal,
+                    "intent": "Retrieve public repository metadata for a read-only smoke test.",
+                },
+            )
+
+        execution_data = self._tool_result_data(execution_result)
+        if isinstance(execution_data, dict) and execution_data.get("is_error"):
+            raise NangoAPIError("The read-only GitHub repository tool returned an error.")
+        return {
+            "provider": GITHUB_PROVIDER,
+            "repository": "NangoHQ/nango",
+            "tool": tool_name,
+            "result": execution_data,
+        }
