@@ -95,6 +95,26 @@ export default function App() {
     }
   };
 
+  const testGithubRead = async () => {
+    setNangoBusy(true);
+    setNangoMessage("");
+    setToolResult("");
+    try {
+      const response = await fetch("/api/v1/integrations/nango/github/test", {
+        method: "POST",
+        headers: { Accept: "application/json" }
+      });
+      if (!response.ok) throw new Error(await readError(response));
+      const payload = (await response.json()) as unknown;
+      setToolResult(JSON.stringify(payload, null, 2));
+      setNangoMessage("فراخوانی read-only ابزار GitHub از طریق Nango MCP موفق بود.");
+    } catch (error) {
+      setNangoMessage(error instanceof Error ? error.message : "تست GitHub ناموفق بود.");
+    } finally {
+      setNangoBusy(false);
+    }
+  };
+
   const discoverGithubTools = async () => {
     setNangoBusy(true);
     setNangoMessage("");
@@ -209,6 +229,13 @@ export default function App() {
             disabled={!nangoStatus?.configured || nangoBusy}
           >
             کشف ابزارهای GitHub
+          </button>
+          <button
+            className="refresh-button secondary-button"
+            onClick={() => void testGithubRead()}
+            disabled={!nangoStatus?.configured || nangoBusy}
+          >
+            اجرای تست read-only واقعی
           </button>
         </div>
 
