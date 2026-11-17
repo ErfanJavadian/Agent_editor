@@ -65,3 +65,20 @@ def test_tool_result_finds_connect_url_in_nested_payload() -> None:
     assert NangoService._find_value(payload, "connect_url") == (
         "https://connect.nango.dev/?session_token=temporary"
     )
+
+
+
+def test_repository_tool_is_selected_from_search_results() -> None:
+    search_result = {
+        "results": [
+            {
+                "query": "get repository metadata",
+                "matches": [
+                    {"tool": "github__get-repository", "action": "get-repository"},
+                    {"tool": "github__create-issue", "action": "create-issue"},
+                ],
+            }
+        ]
+    }
+
+    assert NangoService._find_repository_tool(search_result) == "github__get-repository"
