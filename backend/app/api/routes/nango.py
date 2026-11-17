@@ -62,3 +62,15 @@ async def search_nango_tools(request: ToolSearchRequest) -> ToolSearchResponse:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except NangoAPIError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+
+@router.post("/github/test")
+async def test_github_repository_read() -> dict[str, Any]:
+    """Run a fixed read-only repository lookup through Nango's MCP session."""
+    try:
+        return await NangoService().test_github_repository_read()
+    except NangoConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except NangoAPIError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
