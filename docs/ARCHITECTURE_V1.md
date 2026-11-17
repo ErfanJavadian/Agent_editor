@@ -253,3 +253,19 @@ V1 زمانی از مرحله هسته اولیه عبور می‌کند که:
 
 ---
 **قاعده تغییر معماری:** تغییر مرز ماژول‌ها، پشته اصلی یا سیاست امنیتی باید همراه با دلیل، پیامد و به‌روزرسانی همین سند ثبت شود.
+
+
+## ۱۱. اتصال‌های بیرونی و Nango Agent Sessions
+
+Nango در لایه Integration Adapter قرار می‌گیرد و به‌عنوان جایگزین Tool Registry یا Approval Gate عمل نمی‌کند.
+
+- کلید Environment API فقط در Backend و از متغیر محیطی `NANGO_API_KEY` خوانده می‌شود.
+- Backend برای هر درخواست Agent یک Nango session کوتاه‌مدت ایجاد می‌کند.
+- Tenant selector برای نسخه تک‌کاربره از شناسه ثابت محلی `agent-editor-local-user` استفاده می‌کند.
+- در نسخه اولیه، toolset فقط Integration با شناسه `github` را شامل می‌شود؛ دسترسی به همه Integrationهای Environment به‌صورت پیش‌فرض مجاز نیست.
+- اتصال حساب با ابزار `nango_create_connection` و کشف قابلیت‌ها با `nango_tool_search` انجام می‌شود.
+- session token فقط در حافظه Backend و اتصال MCP باقی می‌ماند؛ نباید به UI، log یا Git فرستاده شود.
+- هر session ده دقیقه اعتبار دارد و پس از آن باید دوباره ساخته شود.
+- ابزارهای دارای اثر بیرونی باید در Agent Core از Tool Registry و Approval Gate عبور کنند؛ اتصال Nango به‌تنهایی مجوز اجرای خودکار صادر نمی‌کند.
+
+در وضعیت فعلی، Backend می‌تواند Integration را آماده کند، لینک OAuth بسازد و ابزارهای MCP را کشف کند. اجرای یک Agent واقعی با مدل و واگذاری خودکار فراخوانی ابزارها پس از پیاده‌سازی Agent Core و Model Gateway انجام می‌شود.
