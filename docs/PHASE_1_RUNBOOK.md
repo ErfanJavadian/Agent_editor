@@ -85,3 +85,51 @@ npm run build
 - برای دسترسی از دستگاه دیگر، سرور را بدون بررسی امنیتی روی `0.0.0.0` باز نکن.
 
 این فاز اسکلت و تست‌های اولیه را اضافه می‌کند. تا زمان اجرای دستورها روی محیط هدف، نتیجه را تأییدشده تلقی نکن.
+
+
+## ۵. پیکربندی Nango (GitHub)
+
+**محدودیت حساب:** طبق شرایط Nango، دارنده حساب فردی باید حداقل ۱۸ سال داشته باشد. اگر توسعه‌دهنده زیر ۱۸ سال است، یک والد/سرپرست بزرگسال باید حساب را ایجاد و مدیریت کند و خودش شرایط را بپذیرد. از تاریخ تولد نادرست استفاده نکن.
+
+1. مدیر بزرگسال در [Nango signup](https://app.nango.dev/signup) حساب بسازد و ایمیل را تأیید کند.
+2. در داشبورد به **Environment settings → API Keys** برود و کلید پیش‌فرض Environment را کپی کند. این کلید باید مجوز `environment:agent_sessions:write` داشته باشد.
+3. در ریشه مخزن، فایل محلی را بساز:
+
+```bash
+cd ~/Agent_editor
+cp .env.example .env
+nano .env
+```
+
+4. مقدار کلید را فقط در فایل محلی `.env` قرار بده:
+
+```dotenv
+NANGO_API_KEY=کلید_واقعی_را_اینجا_قرار_بده
+NANGO_API_BASE_URL=https://api.nango.dev
+NANGO_USER_ID=agent-editor-local-user
+```
+
+5. فایل `.env` در `.gitignore` قرار دارد. کلید را در GitHub، کد Frontend، اسکرین‌شات یا چت قرار نده. اگر کلید جایی افشا شد، آن را در داشبورد Nango باطل و جایگزین کن.
+6. Backend را دوباره اجرا کن تا متغیرها بارگذاری شوند. سپس در رابط Agent Editor:
+   - وضعیت Nango باید به حالت تنظیم‌شده تغییر کند.
+   - روی **ساخت لینک اتصال GitHub** بزن.
+   - لینک تأیید را باز کن و حساب GitHub موردنظر را مجاز کن.
+   - پس از بازگشت، روی **کشف ابزارهای GitHub** بزن.
+
+Backend Integration با شناسه `github` را در صورت نیاز می‌سازد و یک نشست ۱۰ دقیقه‌ای می‌گیرد. ابزارها از طریق MCP کشف می‌شوند. کلید اصلی و session token به مرورگر ارسال نمی‌شوند.
+
+### APIهای محلی Nango
+
+- `GET /api/v1/integrations/nango/status`
+- `POST /api/v1/integrations/nango/github/connect`
+- `POST /api/v1/integrations/nango/tools/search`
+
+نمونه تست کشف ابزار با curl:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/integrations/nango/tools/search \
+  -H 'Content-Type: application/json' \
+  -d '{"queries":["read repository details"],"goal":"Find read-only GitHub repository tools"}'
+```
+
+**مرز نسخه فعلی:** Nango session و MCP tool discovery پیاده‌سازی شده‌اند؛ اتصال ابزارها به چرخه اجرای مدل در Agent Core تا زمان ساخت Model Gateway و Agent Runtime کامل محسوب نمی‌شود.
